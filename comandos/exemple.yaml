@@ -1,0 +1,85 @@
+# 🗂️ Namespace: organiza os recursos
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: meu-ambiente
+
+---
+# 🚀 Deployment: gerencia ReplicaSets e Pods
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: minha-app
+  namespace: meu-ambiente
+spec:
+  replicas: 3   # número desejado de Pods
+  selector:
+    matchLabels:
+      app: minha-app
+  template:
+    metadata:
+      labels:
+        app: minha-app
+    spec:
+      containers:
+      - name: minha-app-container
+        image: nginx:latest
+        ports:
+        - containerPort: 80
+
+---
+# 🔄 ReplicaSet: criado automaticamente pelo Deployment
+# (normalmente você não escreve manualmente, mas aqui está para ilustrar)
+apiVersion: apps/v1
+kind: ReplicaSet
+metadata:
+  name: minha-app-rs
+  namespace: meu-ambiente
+spec:
+  replicas: 3
+  selector:
+    matchLabels:
+      app: minha-app
+  template:
+    metadata:
+      labels:
+        app: minha-app
+    spec:
+      containers:
+      - name: minha-app-container
+        image: nginx:latest
+        ports:
+        - containerPort: 80
+
+---
+# 📦 Pod: unidade básica de execução
+# (também criado automaticamente pelo ReplicaSet, mas pode ser definido manualmente)
+apiVersion: v1
+kind: Pod
+metadata:
+  name: minha-app-pod
+  namespace: meu-ambiente
+  labels:
+    app: minha-app
+spec:
+  containers:
+  - name: minha-app-container
+    image: nginx:latest
+    ports:
+    - containerPort: 80
+
+---
+# 🌐 Service: expõe os Pods
+apiVersion: v1
+kind: Service
+metadata:
+  name: minha-app-service
+  namespace: meu-ambiente
+spec:
+  selector:
+    app: minha-app
+  ports:
+    - protocol: TCP
+      port: 80       # porta do Service
+      targetPort: 80 # porta do container
+  type: ClusterIP   # acessível apenas dentro do cluster

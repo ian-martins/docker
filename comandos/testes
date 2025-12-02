@@ -1,0 +1,7 @@
+RUN echo "AS_ADMIN_PASSWORD=" > /opt/pwdfile && \
+    echo "AS_ADMIN_NEWPASSWORD=admin123" >> /opt/pwdfile && \
+    /opt/glassfish/glassfish/bin/asadmin --user admin --passwordfile /opt/pwdfile change-admin-password
+
+# 5. Habilita secure-admin
+RUN echo "AS_ADMIN_PASSWORD=admin123" > /opt/pwdfile2 && \
+    /opt/glassfish/glassfish/bin/asadmin --user admin --passwordfile /opt/pwdfile2 enable-secure-admin
