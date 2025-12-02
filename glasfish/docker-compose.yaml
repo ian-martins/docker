@@ -1,0 +1,13 @@
+services:
+  server:
+    image: iandockerrepo/glassfish:latest
+    ports:
+      - "4848:4848"
+      - "8080:8080"
+      - "8181:8181"
+    volumes:
+      - gfdata:/opt/glassfish7/glassfish/domains
+      - /home/usina/configs:/opt/configs
+
+volumes:
+  gfdata:

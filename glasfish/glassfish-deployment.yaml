@@ -1,0 +1,96 @@
+# -----------------------------------------
+# PersistentVolume (cria /data/glassfish se não existir)
+# -----------------------------------------
+apiVersion: v1
+kind: PersistentVolume
+metadata:
+  name: glassfish-pv
+spec:
+  capacity:
+    storage: 5Gi
+  accessModes:
+    - ReadWriteOnce
+  persistentVolumeReclaimPolicy: Retain
+  hostPath:
+    path: /data/glassfish
+    type: DirectoryOrCreate
+
+---
+# -----------------------------------------
+# PersistentVolumeClaim
+# -----------------------------------------
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: glassfish-pvc
+spec:
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 5Gi
+
+---
+# -----------------------------------------
+# Deployment do GlassFish
+# -----------------------------------------
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: glassfish
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: glassfish
+  template:
+    metadata:
+      labels:
+        app: glassfish
+    spec:
+      containers:
+      - name: glassfish
+        image: iandockerrepo/glassfish:latest   # <--- ALTERE AQUI
+        imagePullPolicy: IfNotPresent
+        ports:
+        - containerPort: 8080
+        - containerPort: 8181
+        - containerPort: 4848
+
+        volumeMounts:
+        - name: glassfish-data
+          mountPath: /opt/glassfish7/glassfish/domains/domain1
+          # ↑ Persistência real dos domínios
+
+      volumes:
+      - name: glassfish-data
+        persistentVolumeClaim:
+          claimName: glassfish-pvc
+
+---
+# -----------------------------------------
+# Service (HTTP + Painel admin)
+# -----------------------------------------
+apiVersion: v1
+kind: Service
+metadata:
+  name: glassfish-service
+spec:
+  type: NodePort
+  selector:
+    app: glassfish
+  ports:
+    - name: http
+      port: 8080
+      targetPort: 8080
+      nodePort: 30080
+    
+    - name: https
+      port: 8181
+      targetPort: 8181
+      nodePort: 30081
+
+    - name: admin
+      port: 4848
+      targetPort: 4848
+      nodePort: 30448
