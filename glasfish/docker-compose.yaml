@@ -1,6 +1,6 @@
 services:
   server:
-    image: iandockerrepo/glassfish:latest
+    image: glassfish:7.0.0
     ports:
       - "4848:4848"
       - "8080:8080"
