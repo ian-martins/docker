@@ -37,6 +37,24 @@ spec:
       labels:
         app: glassfish
     spec:
+      initContainers:
+      - name: init-glassfish-domain
+        image: iandockerrepo/glassfish:7.0.0
+        command: ["/bin/bash", "-c"]
+        args:
+          - |
+            echo "==> Checando se PVC está vazio..."
+            mkdir -p /glassfish
+            if [ ! -f /glassfish/config/domain.xml ]; then
+              echo "==> PVC vazio — copiando domínio padrão..."
+              cp -a /opt/glassfish7/glassfish/domains/domain1/* /glassfish/
+            else
+              echo "==> PVC já possui dados — iniciando normalmente."
+            fi
+        volumeMounts:
+          - name: glassfish-storage
+            mountPath: /glassfish
+
       containers:
         - name: glassfish
           image: iandockerrepo/glassfish:7.0.0
@@ -46,7 +64,8 @@ spec:
             - containerPort: 4848
           volumeMounts:
             - name: glassfish-storage
-              mountPath: /glassfish
+              mountPath: /opt/glassfish7/glassfish/domains/domain1
+
       volumes:
         - name: glassfish-storage
           persistentVolumeClaim:
