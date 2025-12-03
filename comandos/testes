@@ -5,3 +5,7 @@ RUN echo "AS_ADMIN_PASSWORD=" > /opt/pwdfile && \
 # 5. Habilita secure-admin
 RUN echo "AS_ADMIN_PASSWORD=admin123" > /opt/pwdfile2 && \
     /opt/glassfish/glassfish/bin/asadmin --user admin --passwordfile /opt/pwdfile2 enable-secure-admin
+
+
+03/12/2025
+kubectl get pods --no-headers | grep "^glassfish" | awk '{print $1}'

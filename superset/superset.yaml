@@ -14,8 +14,7 @@ spec:
     spec:
       containers:
       - name: superset
-        image: debian-superset:5.0.1
-        imagePullPolicy: Never
+        image: iandockerrepo/debian-superset:5.0
         ports:
         - containerPort: 8088
 
