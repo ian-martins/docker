@@ -1,3 +1,5 @@
+#Para buildar a imagem, copie no terminal: 'docker build -t superset .'
+#Para subir o container: 'docker run -d -p 8088:8088 --name superset superset:latest'
 FROM debian:12
 
 RUN apt update && apt upgrade -y
