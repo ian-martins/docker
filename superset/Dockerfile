@@ -1,5 +1,7 @@
 #Para buildar a imagem, copie no terminal: 'docker build -t superset .'
-#Para subir o container: 'docker run -d -p 8088:8088 --name superset superset:latest'
+#Para subir o container: 'docker run -d -p 8090:8088 --name superset superset:latest'
+#Para acessar o container: 'docker exec -it superset bash'
+
 FROM debian:12
 
 RUN apt update && apt upgrade -y
@@ -19,10 +21,9 @@ RUN python3 -m venv env && \
     /app/env/bin/pip install apache-superset sqlalchemy-drill pyarrow && \
     /app/env/bin/pip install marshmallow==3.20.1
 
-ENV SUPERSET_SECRET_KEY="gIqInPWqUbOEMg5uecTFP5D0gq9Bb0ze/M1po4ylBdvcLfu1lmhtngzp"
+ENV SUPERSET_SECRET_KEY=$SecretKey
 ENV FLASK_APP=superset
 ENV PATH="/app/env/bin:$PATH"
-
 
 RUN superset db upgrade && \
     superset fab create-admin \
@@ -35,5 +36,4 @@ RUN superset db upgrade && \
 
 COPY superset-logo-horiz.png /app/env/lib/python3.11/site-packages/superset/static/assets/images/superset-logo-horiz.png
 
-EXPOSE 8088
 CMD ["superset", "run", "-p", "8088", "-h", "0.0.0.0"]

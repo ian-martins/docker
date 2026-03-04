@@ -1,0 +1,29 @@
+#Depois de instalado o Docker na Maquina Linux e queremos acessar o Docker da máquina Windows, precisamos configurar o Docker para aceitar conexões remotas. Para isso, siga os passos abaixo:
+
+#Alterar daemon.json na pasta /etc/docker
+  {
+    "hosts": ["tcp://0.0.0.0:2375", "unix:///var/run/docker.sock"]
+  }
+
+#Adicionar na pasta /etc/systemd/system/docker.service.d/ o arquivo override.conf com o seguinte conteúdo:
+  [Service]
+  ExecStart=
+  ExecStart=/usr/bin/dockerd
+
+#Recarregar o systemd daemon: 
+  systemctl daemon-reload
+
+#Restartar o docker: 
+  systemctl restart docker.service
+
+#Agora o Docker está configurado para aceitar conexões remotas na porta 2375. 
+#Para acessar o Docker da máquina Windows, basta usar o endereço IP da máquina Linux seguido da porta 2375.
+
+#No PowerShell, execute o seguinte comando para configurar a variável de ambiente DOCKER_HOST:
+  where docker
+
+#Substitua <IP_DA_MAQUINA_LINUX> pelo endereço IP da máquina Linux onde o Docker está instalado. Por exemplo, se o endereço IP da máquina Linux for
+$env:DOCKER_HOST="tcp://<IP_DA_MAQUINA_LINUX>:2375"
+
+#Teste a conexão executando o comando docker version. Se tudo estiver configurado corretamente, você verá as informações da versão do Docker da máquina Linux.
+
