@@ -1,0 +1,49 @@
+services:
+  superset-db:
+    image: postgres:16
+    container_name: superset-db
+    environment:
+      POSTGRES_DB: superset
+      POSTGRES_USER: superset
+      POSTGRES_PASSWORD: superset
+    ports:
+      - "5432:5432"
+    volumes:
+      - /app/superset/postgres_01:/var/lib/postgresql/data
+    restart: unless-stopped
+
+  superset-init:
+    image: superset:compose
+    container_name: superset-init
+    depends_on:
+      - superset-db
+    environment:
+      SUPERSET_SECRET_KEY: "..."
+      SQLALCHEMY_DATABASE_URI: "postgresql+psycopg2://superset:superset@superset-db:5432/superset"
+    command: >
+      /bin/bash -lc "
+      set -e;
+      until (echo > /dev/tcp/superset-db/5432) >/dev/null 2>&1; do
+        echo 'waiting postgres...'; sleep 2;
+      done;
+      /app/env/bin/superset db upgrade;
+      /app/env/bin/superset fab create-admin --username admin --firstname Admin --lastname User --email admin@local --password admin || true;
+      /app/env/bin/superset init;
+      "
+    restart: "no"
+
+  superset:
+    image: superset:compose
+    container_name: superset-web
+    depends_on:
+      - superset-db
+      - superset-init
+    ports:
+      - "8088:8088"
+    environment:
+      SUPERSET_SECRET_KEY: "/NPCRk8sXo0/gpYemOisMcPV6AKUNd+xTA9zIZaD4IeNO/uL2Uq/kMBN4"
+      SQLALCHEMY_DATABASE_URI: "postgresql+psycopg2://superset:superset@superset-db:5432/superset"
+    volumes:
+      - /app/superset/superset_home:/app/superset_home
+    command: ["superset", "run", "-p", "8088", "-h", "0.0.0.0"]
+    restart: unless-stopped
