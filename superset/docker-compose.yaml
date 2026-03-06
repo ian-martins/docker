@@ -1,25 +1,33 @@
 services:
+  apache-drill:
+    image: apache/drill:1.22.0
+    container_name: ${DRILL}
+    stdin_open: true
+    tty: true
+    ports:
+      - ${DRILL_PORT}:8047
+      - 31011:31010
+    restart: unless-stopped
+ 
   superset-db:
     image: postgres:16
-    container_name: superset-db
+    container_name: ${POSTGRES}
     environment:
-      POSTGRES_DB: superset
-      POSTGRES_USER: superset
-      POSTGRES_PASSWORD: superset
-    ports:
-      - "5432:5432"
+      POSTGRES_DB: ${DB_NAME}
+      POSTGRES_USER: ${DB_USER}
+      POSTGRES_PASSWORD: ${DB_PASSWORD}
     volumes:
-      - /app/superset/postgres_01:/var/lib/postgresql/data
+      - /app/superset/${POSTGRES}:/var/lib/postgresql/data
     restart: unless-stopped
-
+ 
   superset-init:
     image: superset:compose
-    container_name: superset-init
+    container_name: ${SUPERSET_INIT}
     depends_on:
       - superset-db
     environment:
-      SUPERSET_SECRET_KEY: "..."
-      SQLALCHEMY_DATABASE_URI: "postgresql+psycopg2://superset:superset@superset-db:5432/superset"
+      SUPERSET_SECRET_KEY: ${SUPERSET_SECRET_KEY}
+      SQLALCHEMY_DATABASE_URI: "postgresql+psycopg2://${DB_USER}:${DB_PASSWORD}@superset-db:5432/${DB_NAME}"
     command: >
       /bin/bash -lc "
       set -e;
@@ -34,16 +42,15 @@ services:
 
   superset:
     image: superset:compose
-    container_name: superset-web
+    container_name: ${SUPERSET_WEB}
     depends_on:
       - superset-db
       - superset-init
     ports:
-      - "8088:8088"
+      - ${SUPERSET_WEB_PORT}:8088
     environment:
-      SUPERSET_SECRET_KEY: "/NPCRk8sXo0/gpYemOisMcPV6AKUNd+xTA9zIZaD4IeNO/uL2Uq/kMBN4"
-      SQLALCHEMY_DATABASE_URI: "postgresql+psycopg2://superset:superset@superset-db:5432/superset"
-    volumes:
-      - /app/superset/superset_home:/app/superset_home
+      SUPERSET_SECRET_KEY: ${SUPERSET_SECRET_KEY}
+      SQLALCHEMY_DATABASE_URI: "postgresql+psycopg2://${DB_USER}:${DB_PASSWORD}@superset-db:5432/${DB_NAME}"
+
     command: ["superset", "run", "-p", "8088", "-h", "0.0.0.0"]
     restart: unless-stopped
