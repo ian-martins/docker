@@ -4,9 +4,12 @@ services:
     container_name: ${DRILL}
     stdin_open: true
     tty: true
+    mem_limit: 1536m
     ports:
       - ${DRILL_PORT}:8047
-      - 31011:31010
+      # 31011:31010 # for ODBC/JDBC
+    volumes:
+      - /app/superset/${DRILL}:/opt/drill/storage
     restart: unless-stopped
  
   superset-db:
