@@ -1,0 +1,20 @@
+{
+  "type": "http",
+  "connections": {
+    "json": {
+      "url": "http://usl28:8080/Webserver_Sysmanager/sysmanager/consulta/getCONSULTAJSON/7e55ec0f9984fe2c62b3a5bb256bea9d/",
+      "requireTail": true,
+      "method": "GET",
+      "authType": "none",
+      "inputType": "json",
+      "xmlDataLevel": 1,
+      "postParameterLocation": "QUERY_STRING",
+      "verifySSLCert": true
+    }
+  },
+  "timeout": 10,
+  "retryDelay": 1000,
+  "proxyType": "direct",
+  "authMode": "SHARED_USER",
+  "enabled": true
+}

@@ -1,13 +1,13 @@
 services: 
-  postgres-server-01:
+  postgres_for_qualymentos:
     image: postgres:16
-    container_name: postgres-server-01
+    container_name: postgres_for_qualymentos
     environment:
       POSTGRES_DB: postgres
       POSTGRES_USER: root
       POSTGRES_PASSWORD: root
     ports:
-      - "5432:5432"
+      - "5430:5432"
     volumes:
-      - /app/dbForTest/postgres-server-01:/var/lib/postgresql/data
+      - /app/dbForTest/postgres_for_qualymentos:/var/lib/postgresql/data
     restart: unless-stopped

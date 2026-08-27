@@ -1,0 +1,74 @@
+# Ao criar essa rede, prefira iniciar os serviços um a um, esperando o anterior estar finalizado
+# verifique tambem as portas disponiveis no host
+services:
+  apache-drill:
+    image: apache/drill:1.22.0
+    container_name: logistica_apache-drill
+    stdin_open: true
+    tty: true
+    mem_limit: 2560m
+    ports:
+      - "8047:8047"
+      # <Porta do Host>:<Porta do Container>
+    volumes:
+      - /app/superset/logistica_drill:/opt/drill/storage
+      # Dados preservados fora do container <diretorio do host>:<diretori a ser preservado>
+    restart: unless-stopped
+
+  postgres:
+    image: postgres:16
+    container_name: logistica_postgres
+    mem_limit: 2560m
+    ports:
+      - "5432:5432"
+    environment:
+      POSTGRES_DB: logistica
+      POSTGRES_USER: logistica
+      POSTGRES_PASSWORD: logistica
+    volumes:
+      - /app/superset/logistica:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U logistica -d logistica"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+    restart: unless-stopped
+
+  superset-init:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    image: ian/superset:6.1.0
+    container_name: logistica_superset-init
+    environment:
+      SUPERSET_SECRET_KEY: "/NPCRk8sXo0/gpYemOisMcPV6AKUNd+xTA9zIZaD4IeNO/uL2Uq/kMBN4"
+      SUPERSET_DATABASE_URI: "postgresql+psycopg2://logistica:logistica@postgres:5432/logistica"
+    depends_on:
+      postgres:
+        condition: service_healthy
+    command: >
+      /bin/bash -c "
+      superset db upgrade &&
+      superset init
+      "
+    restart: "no"
+
+  superset:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    image: ian/superset:6.1.0
+    mem_limit: 2048m
+    container_name: logistica_superset
+    ports:
+      - "8090:8088"
+    environment:
+      SUPERSET_SECRET_KEY: "/NPCRk8sXo0/gpYemOisMcPV6AKUNd+xTA9zIZaD4IeNO/uL2Uq/kMBN4"
+      SUPERSET_DATABASE_URI: "postgresql+psycopg2://logistica:logistica@postgres:5432/logistica"
+    depends_on:
+      superset-init:
+        condition: service_completed_successfully
+    command: >
+      /bin/bash -c "
+      superset run -p 8088 -h 0.0.0.0
+      "
